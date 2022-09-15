@@ -3,18 +3,17 @@
 #define CARSERV_UTILS_H
 #include <sqlite3.h>
 
-
 enum ErrorType {
     DATABASE = 0,
     AUTHENTICATION = 1,
     REQUEST = 2,
 };
 
-enum Role {
-    CUSTOMER = 0,
-    WORKER = 1,
-    MANAGER = 2,
-};
+//enum Role {
+//    CUSTOMER = 0,
+//    WORKER = 1,
+//    MANAGER = 2,
+//};
 
 enum RequestState {
     CREATED = 0,
@@ -31,7 +30,6 @@ enum WorkType {
     REPAIR = 2
 };
 
-
 struct Error : public std::exception {
     std::string message;
     ErrorType type;
@@ -39,10 +37,7 @@ struct Error : public std::exception {
             message(std::move(message)), type(type) {}
 };
 
-
-std::string* unpack_row(sqlite3_stmt*);
-
-std::vector<std::string*> unpack_rows(sqlite3_stmt*);
-
+std::vector<std::string> unpack_row(sqlite3_stmt*);
+std::vector<std::vector<std::string>> unpack_rows(sqlite3_stmt*);
 
 #endif

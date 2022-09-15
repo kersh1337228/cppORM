@@ -4,6 +4,7 @@
 #include "sqlite3.h"
 #include "../requests/Request.h"
 #include "../../utils.h"
+#include "../../orm/Model.h"
 #include "User.h"
 
 
