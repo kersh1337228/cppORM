@@ -1,4 +1,3 @@
-#include <iostream>
 #include <string>
 #include <map>
 #include <vector>
@@ -8,12 +7,33 @@
 #include "Model.h"
 #include "../utils.h"
 
-Model::Model(const std::map<std::string, std::shared_ptr<BasicField>>& fields) {
+template <typename... Types>
+Model<Types...>::Model(Types... args) {
+    std::vector<std::shared_ptr<BasicField>> vals = {new Field<Types>(args)...};
+    unsigned int i = 0;
+    for (auto& pair : this->fields) {
+        this->fields[pair.first] = vals[i];
+        ++i;
+    }
+}
+template<typename... Types, size_t... Idxs>
+std::unique_ptr<Model<Types...>> parse(std::vector<std::string> const& row, std::index_sequence<Idxs...>) {
+    return std::unique_ptr(new Model(recast<Types>(row[Idxs])...));
+}
+template <typename... Types>
+std::unique_ptr<Model<Types...>> unpack(unsigned int id, std::vector<std::string> const& row) {
+    std::unique_ptr<Model<Types...>> model = parse<Types...>(row, std::make_index_sequence<sizeof...(Types)>{});
+    model->id = id;
+    return model;
+}
+template <typename... Types>
+Model<Types...>::Model(const std::map<std::string, std::shared_ptr<BasicField>>& fields) {
     for (auto& field : fields) {
         this->fields.insert(field);
     }
 }
-Model::Model(const std::map<std::string, std::shared_ptr<Field>>& fields, const std::string& tbname) {
+template <typename... Types>
+Model<Types...>::Model(const std::map<std::string, std::shared_ptr<BasicField>>& fields, const std::string& tbname) {
     sqlite3* db;
     std::string query = "CREATE TABLE IF NOT EXISTS " + tbname + " ("
     "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
@@ -29,7 +49,8 @@ Model::Model(const std::map<std::string, std::shared_ptr<Field>>& fields, const 
     }
     sqlite3_close(db);
 }
-void Model::create() {
+template <typename... Types>
+void Model<Types...>::create() const {
     sqlite3* db;
     sqlite3_open("db.sqlite3", &db);
     std::string query = "INSERT INTO " + this->tbname + " (";
@@ -43,7 +64,8 @@ void Model::create() {
     }
     sqlite3_close(db);
 }
-std::vector<Model*> Model::read(const std::map<std::string, std::string>& data) {
+template <typename... Types>
+std::vector<std::unique_ptr<Model<Types...>>> Model<Types...>::read(const std::map<std::string, std::string>& data) const {
     sqlite3* db;
     sqlite3_open("db.sqlite3", &db);
     std::string query = "SELECT * FROM Requests WHERE id > 0";
@@ -58,20 +80,14 @@ std::vector<Model*> Model::read(const std::map<std::string, std::string>& data) 
         },
         nullptr, nullptr
     );
-    // Selecting requests
     sqlite3_stmt* stmt;
-    // Unpacking rows
     sqlite3_prepare_v2(db, std::string(query + ";").c_str(), 999, &stmt, nullptr);
     std::vector<std::vector<std::string>> rows = unpack_rows(stmt);
-    std::vector<Model*> requests;
-    for (auto row : rows) {
-        Model* model = new Model();
-        model->id = stoi(row[0]);
-        for (auto& field: this->fields) {
-            model->fields[field.first] = field.second->from_sql();
-        }
-        requests.emplace_back(model);
-    }
+    std::vector<std::unique_ptr<Model>> requests;
+    for (auto row : rows)
+        requests.emplace_back(unpack<Types...>(
+            row[0], std::vector<std::string>(row.begin() + 1, row.end())
+        ));
     sqlite3_finalize(stmt);
     sqlite3_close(db);
     return requests;

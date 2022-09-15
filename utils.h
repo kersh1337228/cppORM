@@ -37,6 +37,13 @@ struct Error : public std::exception {
             message(std::move(message)), type(type) {}
 };
 
+template<typename T>
+T recast(std::string s);
+template<>
+int recast<int>(std::string s);
+template<>
+double recast<double>(std::string s);
+
 std::vector<std::string> unpack_row(sqlite3_stmt*);
 std::vector<std::vector<std::string>> unpack_rows(sqlite3_stmt*);
 

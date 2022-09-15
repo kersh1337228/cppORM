@@ -1,8 +1,18 @@
-#include <iostream>
+#include <string>
 #include <vector>
 #include <sqlite3.h>
 #include "utils.h"
 
+template<typename T>
+T recast(std::string s);
+template<>
+int recast<int>(std::string s) {
+    return std::stoi(s);
+}
+template<>
+double recast<double>(std::string s) {
+    return std::stod(s);
+}
 
 std::vector<std::string> unpack_row(sqlite3_stmt* stmt) {
     size_t columns = sqlite3_data_count(stmt);
@@ -18,12 +28,10 @@ std::vector<std::string> unpack_row(sqlite3_stmt* stmt) {
     }
     return row;
 }
-
 std::vector<std::vector<std::string>> unpack_rows(sqlite3_stmt* stmt) {
     std::vector<std::vector<std::string>> rows;
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
+    while (sqlite3_step(stmt) == SQLITE_ROW)
         rows.emplace_back(unpack_row(stmt));
-    }
     return rows;
 }
 

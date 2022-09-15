@@ -9,22 +9,26 @@ protected:
 public:
     std::string name;
     BasicField(const std::string& name): name(name) {};
+    BasicField(bool null, bool unique): null(null), unique(unique) {};
     BasicField(const std::string& name, bool null, bool unique):
     name(name), null(null), unique(unique) {};
+    virtual std::string tname() const = 0;
+    virtual constexpr std::string init() const = 0;
+    virtual constexpr std::string to_sql() const = 0;
 };
 
 template <typename T>
 class Field : public BasicField {
 public:
     T value;
-    std::string name;
     Field(T value): value(value) {}
-    Field(const std::string& name, T value): name(name), value(value) {}
-    Field(T value, bool null, bool unique): value(value), null(null), unique(unique) {};
+    Field(const std::string& name, T value): BasicField(name), value(value) {};
+    Field(T value, bool null, bool unique): value(value), BasicField(null, unique) {};
     Field(const std::string& name, T value, bool null, bool unique):
-    name(name), value(value), null(null), unique(unique) {};
-    virtual constexpr std::string init() const = 0;
-    virtual constexpr std::string to_sql() const = 0;
+    BasicField(name, null, unique), value(value) {};
+    std::string tname() const final;
+    virtual constexpr std::string init() const override = 0;
+    virtual constexpr std::string to_sql() const override = 0;
     virtual constexpr T from_sql(const std::string& sql) const = 0;
 };
 
