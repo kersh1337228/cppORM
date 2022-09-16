@@ -1,19 +1,11 @@
 #include <iostream>
 #include <string>
-#include <vector>
+#include <chrono>
 #include <map>
-#include "sqlite3.h"
+#include "../../orm/Field.h"
+#include "../../orm/Model.h"
 #include "Request.h"
 #include "../../utils.h"
-
-
-string states[5] = {
-    "Created", "Accepted", "Processing", "Processed", "Closed"
-};
-
-string worktypes[3] = {
-    "Diagnostics", "Prevention", "Repair"
-};
 
 void Request::check_table() {
     sqlite3* db;

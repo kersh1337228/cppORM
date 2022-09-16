@@ -2,42 +2,45 @@
 #include <string>
 #include <chrono>
 #include <iomanip>
-#include <sstream>
 #include "Field.h"
 
-// ____________________Field____________________
-template <typename T>
-std::string Field<T>::tname() const {
-    return typeid(T).name();
+// ____________________BasicField____________________
+constexpr std::string BasicField::init() const {
+    std::string sql;
+    if (!this->null) sql += " NOT NULL";
+    if (this->unique) sql += " UNIQUE";
+    return sql;
 }
 
 // ____________________CharField____________________
 constexpr std::string CharField::init() const {
     std::string sql = "VARCHAR(" + std::to_string(this->size) + ")";
-    if (!this->null) sql += " NOT NULL";
-    if (this->unique) sql += " UNIQUE";
-    return sql;
+    return sql + this->BasicField::init();
 }
 constexpr std::string CharField::to_sql() const {
     return this->value.empty() ? "NULL" : "'" + this->value + "'";
 }
-constexpr std::string CharField::from_sql(const std::string& sql) const {
+constexpr std::string CharField::from_sql(const std::string& sql) {
     return sql != "NULL" ? sql : "";
+}
+constexpr std::string CharField::print() const {
+    return this->value.empty() ? "<null>" : this->value;
 }
 
 // ____________________IntField____________________
 constexpr std::string IntField::init() const {
-    std::string sql = "INTEGER";
-    if (!this->null) sql += " NOT NULL";
-    if (this->unique) sql += " UNIQUE";
+    std::string sql = "INTEGER" + this->BasicField::init();
     return this->foreign_key ? sql :
            sql + ", FOREIGN KEY (" + this->name + ") REFERENCES "+ this->reftb + "(id)";
 }
 constexpr std::string IntField::to_sql() const {
     return this->value == INT_MIN ? "NULL" : std::to_string(this->value);
 }
-constexpr int IntField::from_sql(const std::string& sql) const {
+constexpr int IntField::from_sql(const std::string& sql) {
     return sql != "NULL" ? std::stoi(sql) : INT_MIN;
+}
+constexpr std::string IntField::print() const {
+    return this->value == INT_MIN ? "<null>" : std::to_string(this->value);
 }
 
 // ____________________DateTimeField____________________
@@ -55,15 +58,36 @@ std::chrono::system_clock::time_point DateTimeField::stp(const std::string& s) {
 }
 constexpr std::string DateTimeField::init() const {
     std::string sql = "TEXT";
-    if (!this->null) sql += " NOT NULL";
-    if (this->unique) sql += " UNIQUE";
-    return sql;
+    return sql + this->BasicField::init();
 }
 constexpr std::string DateTimeField::to_sql() const {
     return this->value == std::chrono::system_clock::time_point::min() ? "NULL" :
     "'" + DateTimeField::tps(this->value) + "'";
 }
-constexpr std::chrono::system_clock::time_point DateTimeField::from_sql(const std::string& sql) const {
+constexpr std::chrono::system_clock::time_point DateTimeField::from_sql(const std::string& sql) {
     return sql != "NULL" ? DateTimeField::stp(sql) :
     std::chrono::system_clock::time_point::min();
+}
+constexpr std::string DateTimeField::print() const {
+    return this->value == std::chrono::system_clock::time_point::min() ? "<null>" :
+    DateTimeField::tps(this->value);
+}
+
+// ____________________EnumField____________________
+template <typename T>
+constexpr std::string EnumField<T>::init() const {
+    std::string sql = "INTEGER";
+    return sql + this->BasicField::init();
+}
+template <typename T>
+constexpr std::string EnumField<T>::to_sql() const {
+    return this->value == static_cast<T>(INT_MIN) ? "NULL" : std::to_string(this->value);
+}
+template <typename T>
+constexpr T EnumField<T>::from_sql(const std::string& sql) {
+    return sql != "NULL" ? static_cast<T>(std::stoi(sql)) : static_cast<T>(INT_MIN);
+}
+template <typename T>
+constexpr std::string EnumField<T>::print() const {
+    return this->value == static_cast<T>(INT_MIN) ? "<null>" : std::to_string(this->value);
 }

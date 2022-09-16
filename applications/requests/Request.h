@@ -4,46 +4,43 @@
 enum RequestState; enum WorkType;
 
 
-using namespace std;
-
-class Request {
-    friend ostream& operator << (ostream&, Request);
-    friend class Customer;
-    friend class Manager;
-    friend class User;
+class Request : public Model<
+    RequestState,
+    WorkType,
+    unsigned int,
+    unsigned int,
+    std::chrono::system_clock::time_point,
+    std::chrono::system_clock::time_point,
+    std::string
+> {
 private:
-    unsigned int id;
-    RequestState state;
-    WorkType worktype;
-    string customer_username;
-    string creation_date;
-    string worker_username;
-    string closing_date;
-    string close_reason;
-    Request(
-        unsigned int id, RequestState state,
-        WorkType worktype, const string& customer_username,
-        const string& creation_date, const string& worker_username,
-        const string& closing_date, const string& close_reason
-    ): id(id), state(state), worktype(worktype),
-    creation_date(creation_date),
-    closing_date(closing_date),
-    close_reason(close_reason),
-    customer_username(customer_username),
-    worker_username(worker_username) {}
+    Request(  // Value-init constructor
+        RequestState state,
+        WorkType worktype,
+        unsigned int customer,
+        unsigned int worker,
+        const std::chrono::system_clock::time_point& creation_date,
+        const std::chrono::system_clock::time_point& closing_date,
+        const std::string& close_reason
+    ): Model(std::map<std::string, std::shared_ptr<BasicField>>({
+        {"state", std::shared_ptr<BasicField>(new IntField((int)state))},
+        {"worktype", std::shared_ptr<BasicField>(new IntField((int)worktype))},
+        {"customer", std::shared_ptr<BasicField>(new IntField("customer", customer, "Users"))},
+        {"worker", std::shared_ptr<BasicField>(new IntField("worker", worker, "Users"))},
+        {"creation_date", std::shared_ptr<BasicField>(new DateTimeField(creation_date))},
+        {"closing_date", std::shared_ptr<BasicField>(new DateTimeField(closing_date))},
+        {"close_reason", std::shared_ptr<BasicField>(new CharField(close_reason))},
+    })) {}  // Table-init constructor
 public:
-    static void check_table(); // Check if Requests table exists
-    static void create(WorkType, unsigned int);
-    static vector<Request> read(map<const string, const string&>);
-    void update(
-        const string& id, const string& customer,
-        const string& prev_worker, const string& prev_state, const string& prev_worktype,
-        const string& new_worker, const string& new_state, const string& new_worktype,
-        const string& closing_date, const string& close_reason
-    );
-    void delet();
+    Request(): Model(std::map<std::string, std::shared_ptr<BasicField>>({
+        {"state", std::shared_ptr<BasicField>(new IntField())},
+        {"worktype", std::shared_ptr<BasicField>(new IntField())},
+        {"customer", std::shared_ptr<BasicField>(new IntField("customer", "Users"))},
+        {"worker", std::shared_ptr<BasicField>(new IntField("worker", "Users"))},
+        {"creation_date", std::shared_ptr<BasicField>(new DateTimeField())},
+        {"closing_date", std::shared_ptr<BasicField>(new DateTimeField())},
+        {"close_reason", std::shared_ptr<BasicField>(new CharField())},
+    }), "Requests") {}
 };
-
-ostream& operator << (ostream &out, Request request);
 
 #endif

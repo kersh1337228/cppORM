@@ -1,17 +1,25 @@
 #include <string>
 #include <vector>
 #include <sqlite3.h>
+#include <chrono>
 #include "utils.h"
+#include "orm/Field.h"
 
 template<typename T>
-T recast(std::string s);
-template<>
-int recast<int>(std::string s) {
-    return std::stoi(s);
+T recast(const std::string& s) {
+    return s != "NULL" ? static_cast<T>(std::stoi(s)) : static_cast<T>(INT_MIN);
 }
 template<>
-double recast<double>(std::string s) {
-    return std::stod(s);
+std::string recast<std::string>(const std::string& s) {
+    return CharField::from_sql(s);
+}
+template<>
+int recast<int>(const std::string& s) {
+    return IntField::from_sql(s);
+}
+template<>
+std::chrono::system_clock::time_point recast<std::chrono::system_clock::time_point>(const std::string& s) {
+    return DateTimeField::from_sql(s);
 }
 
 std::vector<std::string> unpack_row(sqlite3_stmt* stmt) {

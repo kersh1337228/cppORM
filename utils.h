@@ -5,8 +5,7 @@
 
 enum ErrorType {
     DATABASE = 0,
-    AUTHENTICATION = 1,
-    REQUEST = 2,
+    MODEL = 1,
 };
 
 //enum Role {
@@ -30,6 +29,14 @@ enum WorkType {
     REPAIR = 2
 };
 
+const std::string states[6] = {
+    "Created", "Accepted", "Processing", "Processed", "Payed", "Closed"
+};
+
+const std::string worktypes[3] = {
+    "Diagnostics", "Prevention", "Repair"
+};
+
 struct Error : public std::exception {
     std::string message;
     ErrorType type;
@@ -38,11 +45,13 @@ struct Error : public std::exception {
 };
 
 template<typename T>
-T recast(std::string s);
+T recast(const std::string& s);
 template<>
-int recast<int>(std::string s);
+std::string recast<std::string>(const std::string& s);
 template<>
-double recast<double>(std::string s);
+int recast<int>(const std::string& s);
+template<>
+std::chrono::system_clock::time_point recast<std::chrono::system_clock::time_point>(const std::string& s);
 
 std::vector<std::string> unpack_row(sqlite3_stmt*);
 std::vector<std::vector<std::string>> unpack_rows(sqlite3_stmt*);

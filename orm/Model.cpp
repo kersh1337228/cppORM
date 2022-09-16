@@ -1,9 +1,9 @@
+#include "Field.h"
 #include <string>
 #include <map>
 #include <vector>
 #include <memory>
 #include "sqlite3.h"
-#include "Field.h"
 #include "Model.h"
 #include "../utils.h"
 
@@ -27,12 +27,6 @@ std::unique_ptr<Model<Types...>> unpack(unsigned int id, std::vector<std::string
     return model;
 }
 template <typename... Types>
-Model<Types...>::Model(const std::map<std::string, std::shared_ptr<BasicField>>& fields) {
-    for (auto& field : fields) {
-        this->fields.insert(field);
-    }
-}
-template <typename... Types>
 Model<Types...>::Model(const std::map<std::string, std::shared_ptr<BasicField>>& fields, const std::string& tbname) {
     sqlite3* db;
     std::string query = "CREATE TABLE IF NOT EXISTS " + tbname + " ("
@@ -45,7 +39,10 @@ Model<Types...>::Model(const std::map<std::string, std::shared_ptr<BasicField>>&
     char* error_message;
     if (sqlite3_exec(db, (query.substr(0, query.size() - 2) + ");").c_str(), nullptr, nullptr, &error_message) != SQLITE_OK) {
         sqlite3_free(error_message);
-        throw Error("Error during " + tbname + " table creation", DATABASE);
+        throw Error(
+            "Unknown error did happen during CREATE operation in " +
+            this->tbname + " table", DATABASE
+        );
     }
     sqlite3_close(db);
 }
@@ -60,7 +57,10 @@ void Model<Types...>::create() const {
     for (auto& pair : this->fields)
         query += pair.second->to_sql() + ", ";
     if (sqlite3_exec(db, (query.substr(0, query.size() - 2) + ");").c_str(), nullptr, nullptr, nullptr) != SQLITE_OK) {
-        throw Error("Unknown error did happen during" + this->tbname + "model creation", DATABASE);
+        throw Error(
+            "Unknown error did happen during INSERT operation in " +
+            this->tbname + " table", DATABASE
+        );
     }
     sqlite3_close(db);
 }
@@ -75,7 +75,7 @@ std::vector<std::unique_ptr<Model<Types...>>> Model<Types...>::read(const std::m
         db, std::string("SELECT EXISTS(" + query + ");").c_str(),
         [](void*, int, char** argv, char**) -> int {
             if (std::stoi(argv[0]) == 0)
-                throw Error("No request found", REQUEST);
+                throw Error("Not found", MODEL);
             return 0;
         },
         nullptr, nullptr
@@ -91,4 +91,39 @@ std::vector<std::unique_ptr<Model<Types...>>> Model<Types...>::read(const std::m
     sqlite3_finalize(stmt);
     sqlite3_close(db);
     return requests;
+}
+template <typename... Types>
+void Model<Types...>::update(const std::map<std::string, std::string>& data) {
+    sqlite3* db;
+    sqlite3_open("db.sqlite3", &db);
+    std::string query = "UPDATE Requests SET ";
+    for (auto& pair : data)
+        query += pair.first + " = " + pair.second + ", ";
+    query = query.substr(0, query.size() - 2) + " WHERE id = " + this->id;
+    if (sqlite3_exec(db, query.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK) {
+        throw Error(
+            "Unknown error did happen during UPDATE operation in " +
+            this->tbname + " table", DATABASE
+        );
+    }
+    sqlite3_close(db);
+}
+template <typename... Types>
+void Model<Types...>::remove() const {
+    sqlite3* db;
+    sqlite3_open("db.sqlite3", &db);
+    std::string query = "DELETE FROM Users WHERE id = " + this->id;
+    if (sqlite3_exec(db, query.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK) {
+        throw Error(
+            "Unknown error did happen during DELETE operation in " +
+            this->tbname + " table", DATABASE
+        );
+    }
+    sqlite3_close(db);
+}
+template <typename... Types>
+std::ostream& operator << (std::ostream& out, Model<Types...> model) {
+    for (auto& field : model.fields)
+        out << field.second->print() << "\t";
+    return out;
 }
