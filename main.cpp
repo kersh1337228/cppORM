@@ -3,7 +3,6 @@
 #include "applications/authorization/User.h"
 #include "utils.h"
 
-using namespace std;
 
 int main() {
     // Check if database file exists

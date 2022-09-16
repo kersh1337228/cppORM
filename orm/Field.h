@@ -34,8 +34,8 @@ class CharField : public Field<std::string> {
 public:
     size_t size = 255;
     // Placeholder (no-value) constructors
-    CharField() = default;
-    CharField(bool null, bool unique): Field(null, unique) {};
+    CharField(): Field("") {};
+    CharField(bool null, bool unique): Field("", null, unique) {};
     // Value-init constructors
     CharField(const std::string& value): Field(value), size(value.size()) {};
     CharField(const std::string& value, bool null, bool unique):
@@ -55,17 +55,17 @@ private:
 public:
     // Non-foreign_key constructors
     // Placeholder (no-value) constructors
-    IntField() = default;
-    IntField(bool null, bool unique): Field(null, unique) {};
+    IntField(): Field(INT_MIN) {};
+    IntField(bool null, bool unique): Field(INT_MIN, null, unique) {};
     // Value-init constructors
     IntField(int value): Field(value) {};
     IntField(int value, bool null, bool unique): Field(value, null, unique) {};
     // Foreign_key constructors
     // Placeholder (no-value) constructors
     IntField(const std::string& name, const std::string& reftb):
-    name(name), foreign_key(true), reftb(reftb) {};
+    Field(INT_MIN), name(name), foreign_key(true), reftb(reftb) {};
     IntField(const std::string& name, bool null, bool unique, const std::string& reftb):
-    Field(null, unique), name(name), foreign_key(true), reftb(reftb) {};
+    Field(INT_MIN, null, unique), name(name), foreign_key(true), reftb(reftb) {};
     // Value-init constructors
     IntField(const std::string& name, int value, const std::string& reftb):
     Field(value), name(name), foreign_key(true), reftb(reftb) {};
@@ -80,9 +80,9 @@ public:
 class DateTimeField : public Field<std::chrono::system_clock::time_point> {
 public:
     // Placeholder (no-value) constructors
-    DateTimeField(): Field(std::chrono::system_clock::now()) {}
+    DateTimeField(): Field(std::chrono::system_clock::time_point::min()) {};
     DateTimeField(bool null, bool unique):
-    Field(std::chrono::system_clock::now(), null, unique) {};
+    Field(std::chrono::system_clock::time_point::min(), null, unique) {};
     // Value-init constructors
     DateTimeField(const std::chrono::system_clock::time_point& value): Field(value) {}
     DateTimeField(
@@ -97,15 +97,21 @@ public:
     constexpr std::string print() const override;
 };
 
-template <typename T>
+template <typename T, size_t N>
 class EnumField : public Field<T> {
+    std::array<std::string, N> names = {};
 public:
     // Placeholder (no-value) constructors
-    EnumField() = default;
-    EnumField(bool null, bool unique): Field<T>(null, unique) {};
+    EnumField(const std::array<std::string, N>& names):
+    Field<T>(static_cast<T>(INT_MIN)), names(std::move(names)) {};
+    EnumField(const std::array<std::string, N>& names, bool null, bool unique):
+    Field<T>(static_cast<T>(INT_MIN), null, unique), names(std::move(names)) {};
     // Value-init constructors
     EnumField(T value): Field<T>(value) {}
     EnumField(T value,bool null, bool unique): Field<T>(value, null, unique) {};
+    EnumField(const std::array<std::string, N>& names, T value): Field<T>(value), names(std::move(names)) {}
+    EnumField(const std::array<std::string, N>& names, T value,bool null, bool unique):
+    Field<T>(value, null, unique), names(std::move(names)) {};
     constexpr std::string init() const override;
     constexpr std::string to_sql() const override;
     static constexpr T from_sql(const std::string& sql);

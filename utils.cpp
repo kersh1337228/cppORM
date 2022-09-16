@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <array>
 #include <sqlite3.h>
 #include <chrono>
 #include "utils.h"

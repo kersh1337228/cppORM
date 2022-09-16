@@ -1,7 +1,6 @@
 #pragma once
 #ifndef CARSERV_REQUEST_H
 #define CARSERV_REQUEST_H
-enum RequestState; enum WorkType;
 
 
 class Request : public Model<
@@ -22,25 +21,22 @@ private:
         const std::chrono::system_clock::time_point& creation_date,
         const std::chrono::system_clock::time_point& closing_date,
         const std::string& close_reason
-    ): Model(std::map<std::string, std::shared_ptr<BasicField>>({
-        {"state", std::shared_ptr<BasicField>(new IntField((int)state))},
-        {"worktype", std::shared_ptr<BasicField>(new IntField((int)worktype))},
-        {"customer", std::shared_ptr<BasicField>(new IntField("customer", customer, "Users"))},
-        {"worker", std::shared_ptr<BasicField>(new IntField("worker", worker, "Users"))},
-        {"creation_date", std::shared_ptr<BasicField>(new DateTimeField(creation_date))},
-        {"closing_date", std::shared_ptr<BasicField>(new DateTimeField(closing_date))},
-        {"close_reason", std::shared_ptr<BasicField>(new CharField(close_reason))},
-    })) {}  // Table-init constructor
+    ): Model(state, worktype, customer, worker, creation_date, closing_date, close_reason) {};
 public:
+    Request(RequestState state, WorkType worktype, unsigned int customer): Model({
+        {"state", std::shared_ptr<BasicField>(new EnumField<RequestState, 6>(state))},
+        {"worktype", std::shared_ptr<BasicField>(new EnumField<WorkType, 3>(worktype))},
+        {"customer", std::shared_ptr<BasicField>(new IntField(customer))},
+    }) {};
     Request(): Model(std::map<std::string, std::shared_ptr<BasicField>>({
-        {"state", std::shared_ptr<BasicField>(new IntField())},
-        {"worktype", std::shared_ptr<BasicField>(new IntField())},
+        {"state", std::shared_ptr<BasicField>(new EnumField<RequestState, 6>(states))},
+        {"worktype", std::shared_ptr<BasicField>(new EnumField<WorkType, 3>(worktypes))},
         {"customer", std::shared_ptr<BasicField>(new IntField("customer", "Users"))},
         {"worker", std::shared_ptr<BasicField>(new IntField("worker", "Users"))},
-        {"creation_date", std::shared_ptr<BasicField>(new DateTimeField())},
+        {"creation_date", std::shared_ptr<BasicField>(new DateTimeField(std::chrono::system_clock::now(), false, false))},
         {"closing_date", std::shared_ptr<BasicField>(new DateTimeField())},
         {"close_reason", std::shared_ptr<BasicField>(new CharField())},
-    }), "Requests") {}
+    }), "Requests") {}  // Table-init constructor
 };
 
 #endif

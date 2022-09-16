@@ -5,8 +5,6 @@
 template <typename... Types>
 class Model {
     friend std::ostream& operator << (std::ostream& out, Model model);
-private:
-    Model(Types... args);  // Parser-aimed constructor
 public:
     unsigned int id;
     std::map<std::string, std::shared_ptr<BasicField>> fields = {};
@@ -14,13 +12,14 @@ public:
     Model(  // Value-init constructor
         const std::map<std::string, std::shared_ptr<BasicField>>& fields
     ): fields(std::move(fields)) {};
+    Model(Types... args);  // Value-init constructor
     Model(  // Table-init constructor
         const std::map<std::string, std::shared_ptr<BasicField>>& fields,
         const std::string& tbname
     );
     // CRUD methods
     void create() const;
-    std::vector<std::unique_ptr<Model>> read(const std::map<std::string, std::string>& data) const;
+    static std::vector<std::unique_ptr<Model>> read(const std::map<std::string, std::string>& data);
     void update(const std::map<std::string, std::string>& data);
     void remove() const;
 };

@@ -65,7 +65,7 @@ void Model<Types...>::create() const {
     sqlite3_close(db);
 }
 template <typename... Types>
-std::vector<std::unique_ptr<Model<Types...>>> Model<Types...>::read(const std::map<std::string, std::string>& data) const {
+std::vector<std::unique_ptr<Model<Types...>>> Model<Types...>::read(const std::map<std::string, std::string>& data) {
     sqlite3* db;
     sqlite3_open("db.sqlite3", &db);
     std::string query = "SELECT * FROM Requests WHERE id > 0";

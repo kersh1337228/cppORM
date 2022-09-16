@@ -2,6 +2,7 @@
 #include <string>
 #include <chrono>
 #include <iomanip>
+#include <array>
 #include "Field.h"
 
 // ____________________BasicField____________________
@@ -57,8 +58,8 @@ std::chrono::system_clock::time_point DateTimeField::stp(const std::string& s) {
     return std::chrono::system_clock::from_time_t(std::mktime(&tm));
 }
 constexpr std::string DateTimeField::init() const {
-    std::string sql = "TEXT";
-    return sql + this->BasicField::init();
+    std::string sql = "TEXT" + this->BasicField::init();
+    return this->null ? sql : sql + "DEFAULT '" + tps(this->value) + "'";
 }
 constexpr std::string DateTimeField::to_sql() const {
     return this->value == std::chrono::system_clock::time_point::min() ? "NULL" :
@@ -74,20 +75,20 @@ constexpr std::string DateTimeField::print() const {
 }
 
 // ____________________EnumField____________________
-template <typename T>
-constexpr std::string EnumField<T>::init() const {
+template <typename T, size_t N>
+constexpr std::string EnumField<T, N>::init() const {
     std::string sql = "INTEGER";
     return sql + this->BasicField::init();
 }
-template <typename T>
-constexpr std::string EnumField<T>::to_sql() const {
+template <typename T, size_t N>
+constexpr std::string EnumField<T, N>::to_sql() const {
     return this->value == static_cast<T>(INT_MIN) ? "NULL" : std::to_string(this->value);
 }
-template <typename T>
-constexpr T EnumField<T>::from_sql(const std::string& sql) {
+template <typename T, size_t N>
+constexpr T EnumField<T, N>::from_sql(const std::string& sql) {
     return sql != "NULL" ? static_cast<T>(std::stoi(sql)) : static_cast<T>(INT_MIN);
 }
-template <typename T>
-constexpr std::string EnumField<T>::print() const {
-    return this->value == static_cast<T>(INT_MIN) ? "<null>" : std::to_string(this->value);
+template <typename T, size_t N>
+constexpr std::string EnumField<T, N>::print() const {
+    return this->value == static_cast<T>(INT_MIN) ? "<null>" : this->names[this->value];
 }

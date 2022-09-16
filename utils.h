@@ -8,12 +8,6 @@ enum ErrorType {
     MODEL = 1,
 };
 
-//enum Role {
-//    CUSTOMER = 0,
-//    WORKER = 1,
-//    MANAGER = 2,
-//};
-
 enum RequestState {
     CREATED = 0,
     ACCEPTED = 1,
@@ -29,11 +23,11 @@ enum WorkType {
     REPAIR = 2
 };
 
-const std::string states[6] = {
+const std::array<std::string, 6> states = {
     "Created", "Accepted", "Processing", "Processed", "Payed", "Closed"
 };
 
-const std::string worktypes[3] = {
+const std::array<std::string, 3> worktypes = {
     "Diagnostics", "Prevention", "Repair"
 };
 
