@@ -92,54 +92,6 @@ build CMakeFiles\carserv.dir\main.cpp.obj: CXX_COMPILER__carserv_Debug D$:\Code\
   TARGET_COMPILE_PDB = CMakeFiles\carserv.dir\
   TARGET_PDB = carserv.pdb
 
-build CMakeFiles\carserv.dir\applications\authorization\User.cpp.obj: CXX_COMPILER__carserv_Debug D$:\Code\C++\CLionProjects\carserv\applications\authorization\User.cpp || cmake_object_order_depends_target_carserv
-  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest
-  INCLUDES = -ID:\Code\C++\CLionProjects\carserv\sqlite3
-  OBJECT_DIR = CMakeFiles\carserv.dir
-  OBJECT_FILE_DIR = CMakeFiles\carserv.dir\applications\authorization
-  TARGET_COMPILE_PDB = CMakeFiles\carserv.dir\
-  TARGET_PDB = carserv.pdb
-
-build CMakeFiles\carserv.dir\applications\requests\Request.cpp.obj: CXX_COMPILER__carserv_Debug D$:\Code\C++\CLionProjects\carserv\applications\requests\Request.cpp || cmake_object_order_depends_target_carserv
-  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest
-  INCLUDES = -ID:\Code\C++\CLionProjects\carserv\sqlite3
-  OBJECT_DIR = CMakeFiles\carserv.dir
-  OBJECT_FILE_DIR = CMakeFiles\carserv.dir\applications\requests
-  TARGET_COMPILE_PDB = CMakeFiles\carserv.dir\
-  TARGET_PDB = carserv.pdb
-
-build CMakeFiles\carserv.dir\utils.cpp.obj: CXX_COMPILER__carserv_Debug D$:\Code\C++\CLionProjects\carserv\utils.cpp || cmake_object_order_depends_target_carserv
-  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest
-  INCLUDES = -ID:\Code\C++\CLionProjects\carserv\sqlite3
-  OBJECT_DIR = CMakeFiles\carserv.dir
-  OBJECT_FILE_DIR = CMakeFiles\carserv.dir
-  TARGET_COMPILE_PDB = CMakeFiles\carserv.dir\
-  TARGET_PDB = carserv.pdb
-
-build CMakeFiles\carserv.dir\orm\Model.cpp.obj: CXX_COMPILER__carserv_Debug D$:\Code\C++\CLionProjects\carserv\orm\Model.cpp || cmake_object_order_depends_target_carserv
-  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest
-  INCLUDES = -ID:\Code\C++\CLionProjects\carserv\sqlite3
-  OBJECT_DIR = CMakeFiles\carserv.dir
-  OBJECT_FILE_DIR = CMakeFiles\carserv.dir\orm
-  TARGET_COMPILE_PDB = CMakeFiles\carserv.dir\
-  TARGET_PDB = carserv.pdb
-
-build CMakeFiles\carserv.dir\orm\Field.cpp.obj: CXX_COMPILER__carserv_Debug D$:\Code\C++\CLionProjects\carserv\orm\Field.cpp || cmake_object_order_depends_target_carserv
-  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest
-  INCLUDES = -ID:\Code\C++\CLionProjects\carserv\sqlite3
-  OBJECT_DIR = CMakeFiles\carserv.dir
-  OBJECT_FILE_DIR = CMakeFiles\carserv.dir\orm
-  TARGET_COMPILE_PDB = CMakeFiles\carserv.dir\
-  TARGET_PDB = carserv.pdb
-
-build CMakeFiles\carserv.dir\applications\authorization\Role.cpp.obj: CXX_COMPILER__carserv_Debug D$:\Code\C++\CLionProjects\carserv\applications\authorization\Role.cpp || cmake_object_order_depends_target_carserv
-  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest
-  INCLUDES = -ID:\Code\C++\CLionProjects\carserv\sqlite3
-  OBJECT_DIR = CMakeFiles\carserv.dir
-  OBJECT_FILE_DIR = CMakeFiles\carserv.dir\applications\authorization
-  TARGET_COMPILE_PDB = CMakeFiles\carserv.dir\
-  TARGET_PDB = carserv.pdb
-
 
 # =============================================================================
 # Link build statements for EXECUTABLE target carserv
@@ -148,7 +100,7 @@ build CMakeFiles\carserv.dir\applications\authorization\Role.cpp.obj: CXX_COMPIL
 #############################################
 # Link the executable carserv.exe
 
-build carserv.exe: CXX_EXECUTABLE_LINKER__carserv_Debug CMakeFiles\carserv.dir\main.cpp.obj CMakeFiles\carserv.dir\applications\authorization\User.cpp.obj CMakeFiles\carserv.dir\applications\requests\Request.cpp.obj CMakeFiles\carserv.dir\utils.cpp.obj CMakeFiles\carserv.dir\orm\Model.cpp.obj CMakeFiles\carserv.dir\orm\Field.cpp.obj CMakeFiles\carserv.dir\applications\authorization\Role.cpp.obj | sqlite3.lib || sqlite3.lib
+build carserv.exe: CXX_EXECUTABLE_LINKER__carserv_Debug CMakeFiles\carserv.dir\main.cpp.obj | sqlite3.lib || sqlite3.lib
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
   LINK_FLAGS = /machine:X86 /debug /INCREMENTAL /subsystem:console
   LINK_LIBRARIES = sqlite3.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
