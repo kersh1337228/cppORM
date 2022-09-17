@@ -132,8 +132,7 @@ public:
 };
 template <typename... Types>
 std::ostream& operator << (std::ostream& out, Model<Types...> model) {
-    for (auto& field : model.fields)
-        out << field.second->print() << "\t";
+    for (auto& field : model.fields) out << field.second->print() << "\t";
     return out;
 }
 template<typename... Types, size_t... Idxs>

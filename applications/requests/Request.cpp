@@ -11,8 +11,6 @@ class Request : public Model<
     std::string
 > {
 private:
-    static std::array<std::string, 6> states;
-    static std::array<std::string, 3> worktypes;
     Request(  // Value-init constructor
         std::string state, std::string worktype, int customer, int worker,
         const std::chrono::system_clock::time_point& creation_date,
@@ -34,10 +32,10 @@ public:
         {"closing_date", new Field<std::chrono::system_clock::time_point>()},
         {"close_reason", new Field<std::string>()},
     }), "Requests") {}  // Table-init constructor
-    enum State { CREATED = 0, ACCEPTED = 1, PROCESSING = 2, PROCESSED = 3, PAYED = 4, CLOSED = 5 };
+    enum State { CREATED = 0, ACCEPTED = 1, PROCESSING = 2, PROCESSED = 3, CLOSED = 4 };
     enum Worktype { DIAGNOSTICS = 0, PREVENTION = 1, REPAIR = 2 };
-    std::string get_state(int state) { return Request::states[state]; }
-    std::string get_worktype(int worktype) { return Request::worktypes[worktype]; }
+    static std::array<std::string, 5> states;
+    static std::array<std::string, 3> worktypes;
 };
-std::array<std::string, 6> Request::states = {"Created", "Accepted", "Processing", "Processed", "Payed", "Closed"};
+std::array<std::string, 5> Request::states = {"Created", "Accepted", "Processing", "Processed", "Closed"};
 std::array<std::string, 3> worktypes = {"Diagnostics", "Prevention", "Repair"};

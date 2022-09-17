@@ -5,13 +5,14 @@
 class User : public Model<std::string, std::string, int> {
 public:
     Role* role;
+
     User(const std::string& username, const std::string& password, int role):
     Model(username, password, role) {
         switch (role) {
-            case Role::CUSTOMER: this->role = new Customer(); break;
-            case Role::WORKER: this->role = new Worker(); break;
-            case Role::MANAGER: this->role = new Manager(); break;
-            default: this->role = new Customer(); break;
+            case Role::CUSTOMER: this->role = new Customer(this->id); break;
+            case Role::WORKER: this->role = new Worker(this->id); break;
+            case Role::MANAGER: this->role = new Manager(this->id); break;
+            default: this->role = new Customer(this->id); break;
         }
     }; // Value-init constructor
     User(): Model(std::map<std::string, BasicField*>({
