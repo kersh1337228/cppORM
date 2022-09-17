@@ -101,8 +101,7 @@ public:
             std::vector<std::string> keys = std::get<0>(knv);
             std::vector<std::string> values = std::get<1>(knv);
             requests.emplace_back(unpack<Types...>(
-                std::stoi(row["id"]), std::vector<std::string>(keys.begin() + 1, keys.end()),
-                std::vector<std::string>(values.begin() + 1, values.end())
+                std::stoi(row["id"]), keys, values
             ));
         }
         sqlite3_finalize(stmt);
@@ -127,7 +126,7 @@ public:
     void remove() const {
         sqlite3* db;
         sqlite3_open("db.sqlite3", &db);
-        std::string query = "DELETE FROM " + this->tbname + " WHERE id = " + this->id;
+        std::string query = "DELETE FROM " + this->tbname + " WHERE id = " + std::to_string(this->id);
         if (sqlite3_exec(db, query.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK) {
             throw Error(
                 "Unknown error did happen during DELETE operation in " +

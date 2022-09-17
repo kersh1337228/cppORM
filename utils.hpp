@@ -10,8 +10,10 @@ std::tuple<std::vector<T1>, std::vector<T2>> keysnvals(std::map<T1, T2> const& m
     std::vector<T1> keys;
     std::vector<T2> values;
     for (auto it = m.begin(); it !=  m.end(); ++it) {
-        keys.emplace_back(it->first);
-        values.emplace_back(it->second);
+        if (it->first != "id") {
+            keys.emplace_back(it->first);
+            values.emplace_back(it->second);
+        }
     }
     return std::make_tuple(keys, values);
 }

@@ -40,36 +40,35 @@ public:
         }
         return users;
     }
+    static User sign_up() {
+        // Interactive input interface
+        std::string username, password;
+        int role = -1;
+        std::cout << "Username:" << std::endl;
+        std::cin.ignore();
+        std::getline(std::cin, username);
+        std::cout << "Password:" << std::endl;
+        std::getline(std::cin, password);
+        std::cout << "Role (0 - Customer, 1 - Worker, 2 - Manager):" << std::endl;
+        std::cin >> role;
+        auto users = User::read({{"username", "'" + username + "'"}});
+        if (users.size() > 0) throw Error("User with same name already exists", MODEL);
+        User user(username, password, role);
+        user.create();  // Creating database row
+        return user;
+    }
+    static User sign_in() {
+        // Interactive input interface
+        std::string username, password;
+        std::cout << "Username:" << std::endl;
+        std::cin.ignore();
+        std::getline(std::cin, username);
+        std::cout << "Password:" << std::endl;
+        std::getline(std::cin, password);
+        auto users = User::read({
+            {"username", "'" + username + "'"},
+            {"password", "'" + password + "'"}
+        });
+        return users[0];
+    }
 };
-
-User sign_up() {
-    // Interactive input interface
-    std::string username, password;
-    int role = -1;
-    std::cout << "Username:" << std::endl;
-    std::cin.ignore();
-    std::getline(std::cin, username);
-    std::cout << "Password:" << std::endl;
-    std::getline(std::cin, password);
-    std::cout << "Role (0 - Customer, 1 - Worker, 2 - Manager):" << std::endl;
-    std::cin >> role;
-    auto users = User::read({{"username", "'" + username + "'"}});
-    if (users.size() > 0) throw Error("User with same name already exists", MODEL);
-    User user(username, password, role);
-    user.create();  // Creating database row
-    return user;
-}
-User sign_in() {
-    // Interactive input interface
-    std::string username, password;
-    std::cout << "Username:" << std::endl;
-    std::cin.ignore();
-    std::getline(std::cin, username);
-    std::cout << "Password:" << std::endl;
-    std::getline(std::cin, password);
-    auto users = User::read({
-        {"username", "'" + username + "'"},
-        {"password", "'" + password + "'"}
-    });
-    return users[0];
-}

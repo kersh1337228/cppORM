@@ -39,7 +39,7 @@ public:
     void update_request() const {
         // List of requests available display
         auto requests = Request::read({
-            {"state", "'" + Request::states[Request::CREATED] + "' OR '" + Request::states[Request::ACCEPTED] + "'"},
+            {"state", "'" + Request::states[Request::CREATED] + "' OR state = '" + Request::states[Request::ACCEPTED] + "'"},
             {"customer", std::to_string(this->userid)},
         });
         this->print_requests(requests);
@@ -51,7 +51,7 @@ public:
             try {
                 auto req = Request::read({
                     {"id", std::to_string(choice)},
-                    {"state", "'" + Request::states[Request::CREATED] + "' OR '" + Request::states[Request::ACCEPTED] + "'"},
+                    {"state", "'" + Request::states[Request::CREATED] + "' OR state = '" + Request::states[Request::ACCEPTED] + "'"},
                     {"customer", std::to_string(this->userid)},
                 })[0];
                 std::string wt; int worktype = -1;
@@ -80,7 +80,7 @@ public:
     void cancel_request() const {
         // List of requests available display
         auto requests = Request::read({
-            {"state", "'" + Request::states[Request::CREATED] + "' OR '" + Request::states[Request::ACCEPTED] + "'"},
+            {"state", "'" + Request::states[Request::CREATED] + "' OR state = '" + Request::states[Request::ACCEPTED] + "'"},
             {"customer", std::to_string(this->userid)},
         });
         this->print_requests(requests);
@@ -92,7 +92,7 @@ public:
             try {
                 auto req = Request::read({
                     {"id", std::to_string(choice)},
-                    {"state", "'" + Request::states[Request::CREATED] + "' OR '" + Request::states[Request::ACCEPTED] + "'"},
+                    {"state", "'" + Request::states[Request::CREATED] + "' OR state = '" + Request::states[Request::ACCEPTED] + "'"},
                     {"customer", std::to_string(this->userid)},
                 })[0];
                 req.update({
@@ -263,7 +263,7 @@ public:
                 } else throw error;
             }
         }
-    }
+   }
     void confirm_request_done() const {
         // List of requests available display
         auto requests = Request::read({{"state", "'" + Request::states[Request::PROCESSED] + "'"}});
