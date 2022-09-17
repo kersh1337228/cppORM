@@ -1,40 +1,36 @@
+#include "../orm/Model.cpp"
+#include "Role.cpp"
 #include <iostream>
-#include <string>
-#include <map>
-#include <vector>
-#include <array>
-#include "../../orm/Field.h"
-#include "../../orm/Model.h"
-#include "../../utils.h"
-#include "Role.h"
-#include "User.h"
+
+class User : public Model<std::string, std::string, int> {
+public:
+    Role* role;
+    User(const std::string& username, const std::string& password, int role):
+    Model(username, password, role) {
+        switch (role) {
+            case Role::CUSTOMER: this->role = new Customer(); break;
+            case Role::WORKER: this->role = new Worker(); break;
+            case Role::MANAGER: this->role = new Manager(); break;
+            default: this->role = new Customer(); break;
+        }
+    }; // Value-init constructor
+    User(): Model(std::map<std::string, BasicField*>({
+         {"username", new Field<std::string>(false, true)},
+         {"password", new Field<std::string>(false, false)},
+         {"role", new Field<int>()},
+    }), "Users") {}  // Table-init constructor
+};
 
 User sign_up() {
     // Interactive input interface
     std::string username, password;
-    Roles role; int temp_role = -1;
+    int role = -1;
     std::cout << "Username:" << std::endl;
     std::getline(std::cin, username);
     std::cout << "Password:" << std::endl;
     std::getline(std::cin, password);
-    while (temp_role < 0) {
-        std::cout << "Role (0 - Customer, 1 - Worker, 2 - Manager):" << std::endl;
-        std::cin >> temp_role;
-        switch (temp_role) {
-            case 0:
-                role = CUSTOMER;
-                break;
-            case 1:
-                role = WORKER;
-                break;
-            case 2:
-                role = MANAGER;
-                break;
-            default:
-                std::cerr << "Wrong role number" << std::endl;
-                temp_role = -1;
-        }
-    }  // Uniqueness check
+    std::cout << "Role (0 - Customer, 1 - Worker, 2 - Manager):" << std::endl;
+    std::cin >> role;
     auto users = User::read({{"username", "'" + username + "'"}});
     if (users.size() > 0) throw Error("User with same name already exists", MODEL);
     User user(username, password, role);
@@ -52,6 +48,6 @@ User sign_in() {
         {"username", "'" + username + "'"},
         {"password", "'" + password + "'"}
     });
-    User* user = static_cast<User*>(users[0].get());
+    User* user = static_cast<User*>(users[0]);
     return *user;
 }

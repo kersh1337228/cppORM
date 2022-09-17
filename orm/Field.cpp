@@ -1,94 +1,168 @@
-#include <iostream>
+#pragma once
 #include <string>
 #include <chrono>
-#include <iomanip>
-#include <array>
-#include "Field.h"
 
-// ____________________BasicField____________________
-constexpr std::string BasicField::init() const {
-    std::string sql;
-    if (!this->null) sql += " NOT NULL";
-    if (this->unique) sql += " UNIQUE";
-    return sql;
-}
+class BasicField {
+protected:
+    bool null = true;
+    bool unique = false;
+public:
+    BasicField() = default;
+    BasicField(bool null, bool unique): null(null), unique(unique) {};
+    virtual constexpr std::string init() const {
+        std::string sql;
+        if (!this->null) sql += " NOT NULL";
+        if (this->unique) sql += " UNIQUE";
+        return sql;
+    }
+    virtual constexpr std::string to_sql() const = 0;
+    virtual constexpr std::string print() const  = 0;
+};
 
-// ____________________CharField____________________
-constexpr std::string CharField::init() const {
-    std::string sql = "VARCHAR(" + std::to_string(this->size) + ")";
-    return sql + this->BasicField::init();
-}
-constexpr std::string CharField::to_sql() const {
-    return this->value.empty() ? "NULL" : "'" + this->value + "'";
-}
-constexpr std::string CharField::from_sql(const std::string& sql) {
-    return sql != "NULL" ? sql : "";
-}
-constexpr std::string CharField::print() const {
-    return this->value.empty() ? "<null>" : this->value;
-}
+template <typename T>
+class Field : public BasicField {
+public:
+    T value;
+    // Placeholder (no-value) constructors
+    Field() = default;
+    Field(bool null, bool unique): BasicField(null, unique) {};
+    // Value-init constructors
+    Field(T value): value(value) {}
+    Field(T value, bool null, bool unique): value(value), BasicField(null, unique) {};
+    // Query-aimed methods
+    virtual constexpr std::string init() const override = 0;
+    virtual constexpr std::string to_sql() const override = 0;
+    static constexpr T from_sql(const std::string& sql);
+    virtual constexpr std::string print() const override = 0;
+};
 
-// ____________________IntField____________________
-constexpr std::string IntField::init() const {
-    std::string sql = "INTEGER" + this->BasicField::init();
-    return this->foreign_key ? sql :
-           sql + ", FOREIGN KEY (" + this->name + ") REFERENCES "+ this->reftb + "(id)";
-}
-constexpr std::string IntField::to_sql() const {
-    return this->value == INT_MIN ? "NULL" : std::to_string(this->value);
-}
-constexpr int IntField::from_sql(const std::string& sql) {
-    return sql != "NULL" ? std::stoi(sql) : INT_MIN;
-}
-constexpr std::string IntField::print() const {
-    return this->value == INT_MIN ? "<null>" : std::to_string(this->value);
-}
+template <>
+class Field<std::string> : public BasicField {
+public:
+    std::string value;
+    size_t size = 255;
+    // Placeholder (no-value) constructors
+    Field(): Field("") {};
+    Field(bool null, bool unique): Field("", null, unique) {};
+    // Value-init constructors
+    Field(const std::string& value): value(value), size(value.size()) {};
+    Field(const std::string& value, bool null, bool unique):
+    BasicField(null, unique), value(value), size(value.size()) {};
+    // Query-aimed methods
+    constexpr std::string init() const override {
+        std::string sql = "VARCHAR(" + std::to_string(this->size) + ")";
+        return sql + this->BasicField::init();
+    }
+    constexpr std::string to_sql() const override {
+        return this->value.empty() ? "NULL" : "'" + this->value + "'";
+    }
+    static constexpr std::string from_sql(const std::string& sql) {
+        return sql != "NULL" ? sql : "";
+    }
+    constexpr std::string print() const override {
+        return this->value.empty() ? "<null>" : this->value;
+    }
+};
 
-// ____________________DateTimeField____________________
-std::string DateTimeField::tps(const std::chrono::system_clock::time_point& tp) {
-    time_t t = std::chrono::system_clock::to_time_t(tp);
-    std::stringstream ss;
-    ss << std::put_time(localtime(&t), "%d/%m/%Y %X");
-    return ss.str();
-}
-std::chrono::system_clock::time_point DateTimeField::stp(const std::string& s) {
-    tm tm = {};
-    std::stringstream ss(s);
-    ss >> std::get_time(&tm, "%d/%m/%Y %X");
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
-}
-constexpr std::string DateTimeField::init() const {
-    std::string sql = "TEXT" + this->BasicField::init();
-    return this->null ? sql : sql + "DEFAULT '" + tps(this->value) + "'";
-}
-constexpr std::string DateTimeField::to_sql() const {
-    return this->value == std::chrono::system_clock::time_point::min() ? "NULL" :
-    "'" + DateTimeField::tps(this->value) + "'";
-}
-constexpr std::chrono::system_clock::time_point DateTimeField::from_sql(const std::string& sql) {
-    return sql != "NULL" ? DateTimeField::stp(sql) :
-    std::chrono::system_clock::time_point::min();
-}
-constexpr std::string DateTimeField::print() const {
-    return this->value == std::chrono::system_clock::time_point::min() ? "<null>" :
-    DateTimeField::tps(this->value);
-}
+template <>
+class Field<int> : public BasicField {
+private:
+    bool foreign_key = false;
+    std::string reftb;
+    std::string name;
+public:
+    int value;
+    // Non-foreign_key constructors
+    // Placeholder (no-value) constructors
+    Field(): value(INT_MIN) {};
+    Field(bool null, bool unique): value(INT_MIN), BasicField(null, unique) {};
+    // Value-init constructors
+    Field(int value): value(value) {};
+    Field(int value, bool null, bool unique): value(value), BasicField(null, unique) {};
+    // Foreign_key constructors
+    // Placeholder (no-value) constructors
+    Field(const std::string& name, const std::string& reftb):
+    value(INT_MIN), name(name), foreign_key(true), reftb(reftb) {};
+    Field(const std::string& name, bool null, bool unique, const std::string& reftb):
+    value(INT_MIN), BasicField(null, unique), name(name), foreign_key(true), reftb(reftb) {};
+    // Value-init constructors
+    Field(const std::string& name, int value, const std::string& reftb):
+    value(value), name(name), foreign_key(true), reftb(reftb) {};
+    Field(const std::string& name, int value, bool null, bool unique, const std::string& reftb):
+    value(value), BasicField(null, unique), name(name), foreign_key(true), reftb(reftb) {};
+    constexpr std::string init() const override {
+        std::string sql = "INTEGER" + this->BasicField::init();
+        return this->foreign_key ? sql :
+               sql + ", FOREIGN KEY (" + this->name + ") REFERENCES "+ this->reftb + "(id)";
+    }
+    constexpr std::string to_sql() const override {
+        return this->value == INT_MIN ? "NULL" : std::to_string(this->value);
+    }
+    static constexpr int from_sql(const std::string& sql) {
+        return sql != "NULL" ? std::stoi(sql) : INT_MIN;
+    }
+    constexpr std::string print() const override {
+        return this->value == INT_MIN ? "<null>" : std::to_string(this->value);
+    }
+};
 
-// ____________________EnumField____________________
-template <typename T, size_t N>
-constexpr std::string EnumField<T, N>::init() const {
-    std::string sql = "INTEGER";
-    return sql + this->BasicField::init();
+template <>
+class Field<std::chrono::system_clock::time_point> : public BasicField {
+public:
+    std::chrono::system_clock::time_point value;
+    // Placeholder (no-value) constructors
+    Field(): value(std::chrono::system_clock::time_point::min()) {};
+    Field(bool null, bool unique):
+    value(std::chrono::system_clock::time_point::min()), BasicField(null, unique) {};
+    // Value-init constructors
+    Field(const std::chrono::system_clock::time_point& value): value(value) {}
+    Field(
+        const std::chrono::system_clock::time_point& value,
+        bool null, bool unique
+    ): value(value), BasicField(null, unique) {};
+    static std::string tps(const std::chrono::system_clock::time_point& tp) {
+        time_t t = std::chrono::system_clock::to_time_t(tp);
+        std::stringstream ss;
+        ss << std::put_time(localtime(&t), "%d/%m/%Y %X");
+        return ss.str();
+    }
+    static std::chrono::system_clock::time_point stp(const std::string& s) {
+        tm tm = {};
+        std::stringstream ss(s);
+        ss >> std::get_time(&tm, "%d/%m/%Y %X");
+        return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    }
+    constexpr std::string init() const override {
+        std::string sql = "TEXT" + this->BasicField::init();
+        return this->null ? sql : sql + "DEFAULT '" + tps(this->value) + "'";
+    }
+    constexpr std::string to_sql() const override {
+        return this->value == std::chrono::system_clock::time_point::min() ? "NULL" :
+               "'" + Field::tps(this->value) + "'";
+    }
+    static constexpr std::chrono::system_clock::time_point from_sql(const std::string& sql) {
+        return sql != "NULL" ? Field::stp(sql) :
+               std::chrono::system_clock::time_point::min();
+    }
+    constexpr std::string print() const override {
+        return this->value == std::chrono::system_clock::time_point::min() ? "<null>" :
+               Field::tps(this->value);
+    }
+};
+
+template<typename T>
+T recast(const std::string& s) {
+    return s != "NULL" ? static_cast<T>(std::stoi(s)) : static_cast<T>(INT_MIN);
 }
-template <typename T, size_t N>
-constexpr std::string EnumField<T, N>::to_sql() const {
-    return this->value == static_cast<T>(INT_MIN) ? "NULL" : std::to_string(this->value);
+template<>
+std::string recast<std::string>(const std::string& s) {
+    return Field<std::string>::from_sql(s);
 }
-template <typename T, size_t N>
-constexpr T EnumField<T, N>::from_sql(const std::string& sql) {
-    return sql != "NULL" ? static_cast<T>(std::stoi(sql)) : static_cast<T>(INT_MIN);
+template<>
+int recast<int>(const std::string& s) {
+    return Field<int>::from_sql(s);
 }
-template <typename T, size_t N>
-constexpr std::string EnumField<T, N>::print() const {
-    return this->value == static_cast<T>(INT_MIN) ? "<null>" : this->names[this->value];
+template<>
+std::chrono::system_clock::time_point recast<std::chrono::system_clock::time_point>(const std::string& s) {
+    return Field<std::chrono::system_clock::time_point>::from_sql(s);
 }
